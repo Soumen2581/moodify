@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Moodify 🎧</title>
+    <style>
+        body {
+          font-family: Arial, sans-serif;
+          background: #0f172a;
+          color: white;
+          margin: 0;
+          padding: 20px;
+        }
+
+        h1 {
+          text-align: center;
+          margin-bottom: 20px;
+        }
+
+        .moods {
+          display: flex;
+          justify-content: center;
+          gap: 10px;
+          flex-wrap: wrap;
+          margin-bottom: 30px;
+        }
+
+        button {
+          padding: 10px 15px;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          background: #2563eb;
+          color: white;
+          transition: 0.2s;
+        }
+
+        button:hover {
+          background: #1d4ed8;
+        }
+
+        .tracks {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+          gap: 20px;
+        }
+
+        .card {
+          background: #1e293b;
+          padding: 10px;
+          border-radius: 12px;
+        }
+
+        .card img {
+          width: 100%;
+          border-radius: 8px;
+        }
+
+        .title {
+          font-weight: bold;
+          margin-top: 10px;
+        }
+
+        .artist {
+          font-size: 14px;
+          color: #94a3b8;
+        }
+
+        audio {
+          width: 100%;
+          margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🎧 Moodify</h1>
+
+<div class="moods" id="moods"></div>
+<div class="tracks" id="tracks"></div>
+
+<script>
+    let token = "";
+
+    // 🔹 LOGIN automatically (for demo)
+    async function login() {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: "test@test.com",
+          password: "password123"
+        })
+      });
+
+      const data = await res.json();
+      token = data.token;
+    }
+
+    // 🔹 Load moods
+    async function loadMoods() {
+      const res = await fetch('/api/moods');
+      const moods = await res.json();
+
+      const container = document.getElementById('moods');
+
+      moods.forEach(mood => {
+        const btn = document.createElement('button');
+        btn.innerText = mood;
+        btn.onclick = () => getTracks(mood);
+        container.appendChild(btn);
+      });
+    }
+
+    // 🔹 Get tracks
+    async function getTracks(mood) {
+      const res = await fetch(`/api/moods/recommend?mood=${mood}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+      displayTracks(data.tracks);
+    }
+
+    // 🔹 Display tracks
+    function displayTracks(tracks) {
+      const container = document.getElementById('tracks');
+      container.innerHTML = "";
+
+      tracks.forEach(track => {
+        const div = document.createElement('div');
+        div.className = "card";
+
+        div.innerHTML = `
+          <img src="${track.imageUrl}" />
+          <div class="title">${track.name}</div>
+          <div class="artist">${track.artist}</div>
+          ${track.previewUrl ? `<audio controls src="${track.previewUrl}"></audio>` : ''}
+          <button onclick='saveTrack(${JSON.stringify(track)})'>Save</button>
+        `;
+
+        container.appendChild(div);
+      });
+    }
+
+    // 🔹 Save track
+    async function saveTrack(track) {
+      await fetch('/api/tracks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          spotifyId: track.spotifyId,
+          name: track.name,
+          artist: track.artist,
+          album: track.album,
+          imageUrl: track.imageUrl,
+          previewUrl: track.previewUrl,
+          mood: "unknown"
+        })
+      });
+
+      alert("Saved!");
+    }
+
+    // INIT
+    (async () => {
+      await login();
+      await loadMoods();
+    })();
+</script>
+
+</body>
+</html>
