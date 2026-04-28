@@ -15,9 +15,11 @@ async function loadApp() {
     const data = await res.json();
 
     if (data.youtubeConfigured) {
-      banner.className = 'banner hidden';
-      banner.innerHTML = '';
+      banner.textContent = '';
+      banner.className = 'banner';
+      banner.hidden = true;
     } else {
+      banner.hidden = false;
       banner.className = 'banner warn';
       banner.innerHTML =
         'Add <code>YOUTUBE_API_KEY</code> to <code>.env</code> at the project root, then restart.';
@@ -36,6 +38,7 @@ async function loadApp() {
     }
     grid.replaceChildren(frag);
   } catch {
+    banner.hidden = false;
     banner.className = 'banner';
     banner.textContent = 'Cannot reach API. Is the server running?';
     grid.innerHTML = '<p class="err" style="grid-column:1/-1;text-align:center">Failed to load.</p>';
