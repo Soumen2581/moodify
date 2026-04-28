@@ -1,9 +1,25 @@
-require('dotenv').config();
-const app       = require('./app');
-const connectDB = require('./config/db');
+const { loadEnv, ENV_FILE, youtubeApiKey } = require('./config/env');
+
+loadEnv();
+console.log('[moodify] Loading…');
+if (!youtubeApiKey()) {
+  console.warn('[moodify] YOUTUBE_API_KEY missing — expected in:', ENV_FILE);
+}
+
+const mongoose = require('mongoose');
+mongoose.set('bufferCommands', false);
+
+const app = require('./app');
 
 const PORT = process.env.PORT || 3000;
 
-connectDB().then(() => {
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 http://localhost:${PORT}`);
 });
+
+mongoose
+  .connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 2500 })
+  .then(() => console.log('✅ MongoDB'))
+  .catch((err) => {
+    console.warn('⚠️ MongoDB:', err.message, '(moods via YouTube still work)');
+  });
