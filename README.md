@@ -1,73 +1,91 @@
 # Moodify
 
-Express API + static UI: pick a mood → random YouTube results (YouTube Data API v3).
+Pick a mood, get randomized **YouTube** suggestions (YouTube Data API v3). Express API, static front end, optional MongoDB for auth and saved tracks.
 
-## Layout
+## Requirements
+
+- Node 20+ (matches Docker image)
+- [YouTube Data API v3](https://console.cloud.google.com/apis/library/youtube.googleapis.com) key
+
+## Environment
+
+Copy `.env.example` to `.env` and set:
+
+| Variable | Required | Notes |
+|----------|----------|--------|
+| `YOUTUBE_API_KEY` | Yes (for recommendations) | Project root `.env` |
+| `JWT_SECRET` | Yes (for `/api/auth`, `/api/tracks`) | Long random string |
+| `MONGO_URI` | Optional locally | Docker Compose overrides this for the `app` service |
+| `PORT` | No | Default `3000` |
+
+## Scripts
+
+| Command | Purpose |
+|---------|---------|
+| `npm run dev` | Development server (nodemon) |
+| `npm start` | Production-style (`node src/server.js`) |
+| `npm test` | Jest + Supertest (no Mongo / no live YouTube) |
+| `npm run docker:up` | Build and start app + Mongo (detached) |
+| `npm run docker:down` | Stop Compose stack |
+| `npm run docker:logs` | Follow app container logs |
+
+## Run locally
+
+```bash
+npm install
+cp .env.example .env
+# edit .env — set YOUTUBE_API_KEY and JWT_SECRET
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000). Start Mongo if you use registration, login, or saved tracks.
+
+## Run with Docker
+
+From this directory (where `docker-compose.yml` lives):
+
+```bash
+cp .env.example .env   # if you do not have .env yet
+npm run docker:up
+```
+
+- App: [http://localhost:3000](http://localhost:3000)  
+- Mongo on the host: `mongodb://localhost:27018` (maps to the `mongo` service)
+
+Compose sets `MONGO_URI=mongodb://mongo:27017/moodify` for the app container. Keep secrets in `.env` on the host; that file is not copied into the image.
+
+## Project layout
 
 ```
 moodify/
-├── public/                 # Static front-end
-│   ├── index.html
-│   ├── styles.css
-│   └── script.js
+├── public/           # Static UI
 ├── src/
-│   ├── server.js           # Entry: env, HTTP listen, Mongo
-│   ├── app.js              # Express app + routes + static
-│   ├── config/
-│   │   ├── env.js          # .env path + YouTube key helper
-│   │   └── moods.js        # Mood → search queries
+│   ├── server.js     # Env, HTTP listen, Mongo
+│   ├── app.js        # Express app, routes, static files
+│   ├── config/       # env.js, moods.js
 │   ├── controllers/
 │   ├── middleware/
 │   ├── models/
 │   └── routes/
-├── docker-compose.yml
+├── tests/            # Jest tests
 ├── Dockerfile
-├── .env                    # not committed — copy from .env.example
-└── package.json
+└── docker-compose.yml
 ```
 
-## Tests
+## API (overview)
 
-```bash
-npm test
-```
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/bootstrap` | Moods list + `youtubeConfigured` |
+| GET | `/api/moods` | Same mood ids as bootstrap |
+| GET | `/api/moods/recommend?mood=` | YouTube-backed suggestions |
+| GET | `/api/music-config` | Provider + YouTube key configured flag |
+| POST | `/api/auth/register` | Register |
+| POST | `/api/auth/login` | Login (JWT) |
+| POST | `/api/tracks` | Save a track (Bearer JWT) |
+| GET | `/api/tracks` | List saved tracks (Bearer JWT) |
+| DELETE | `/api/tracks/:id` | Remove a saved track (Bearer JWT) |
 
-Jest + Supertest: mood config helpers and HTTP routes (no Mongo, no real YouTube calls).
+## License
 
-## Local (no Docker)
-
-1. Copy `.env.example` → `.env` and set `YOUTUBE_API_KEY` (and `JWT_SECRET`).
-2. Start Mongo locally if you use auth / saved tracks.
-3. `npm install` → `npm run dev` → open http://localhost:3000
-
-## Docker
-
-From the **`moodify`** folder (the one that contains `package.json` — do **not** run `cd moodify` if your prompt already ends with `moodify`):
-
-```bash
-npm run docker:up
-```
-
-**If you see `no such service: #`:** your `package.json` script must be **only**  
-`docker compose up --build -d` — **no** `# comments` on the same line (npm passes them to Docker). Fix with:
-
-```bash
-npm pkg set scripts.docker:up="docker compose up --build -d"
-```
-
-- App: http://localhost:3000  
-- Mongo on host: `localhost:27018`  
-- Compose injects `MONGO_URI` for the app container; keep `YOUTUBE_API_KEY` in `.env`.
-
-```bash
-npm run docker:logs
-npm run docker:down
-```
-
-## API
-
-| Method | Path | Purpose |
-|--------|------|---------|
-| GET | `/api/bootstrap` | `{ moods, youtubeConfigured }` (single front-end load) |
-| GET | `/api/moods/recommend?mood=` | YouTube suggestions |
-| GET | `/api/music-config` | Legacy JSON status |
+ISC
