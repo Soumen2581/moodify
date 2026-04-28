@@ -82,7 +82,9 @@ moodify/
 | GET | `/api/music-config` | Provider + YouTube key configured flag |
 | POST | `/api/auth/register` | Register |
 | POST | `/api/auth/login` | Login (JWT) |
-| * | `/api/tracks` | Saved tracks (Bearer JWT) |
+| POST | `/api/tracks` | Save a track (Bearer JWT) |
+| GET | `/api/tracks` | List saved tracks (Bearer JWT) |
+| DELETE | `/api/tracks/:id` | Remove a saved track (Bearer JWT) |
 
 ## License
 
