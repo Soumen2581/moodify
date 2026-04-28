@@ -15,8 +15,8 @@ async function loadApp() {
     const data = await res.json();
 
     if (data.youtubeConfigured) {
-      banner.className = 'banner ok';
-      banner.innerHTML = 'YouTube API ready.';
+      banner.className = 'banner hidden';
+      banner.innerHTML = '';
     } else {
       banner.className = 'banner warn';
       banner.innerHTML =
