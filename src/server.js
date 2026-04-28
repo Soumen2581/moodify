@@ -14,12 +14,12 @@ const app = require('./app');
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 http://localhost:${PORT}`);
+  console.log(`[moodify] http://localhost:${PORT}`);
 });
 
 mongoose
   .connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 2500 })
-  .then(() => console.log('✅ MongoDB'))
+  .then(() => console.log('[moodify] MongoDB connected'))
   .catch((err) => {
-    console.warn('⚠️ MongoDB:', err.message, '(moods via YouTube still work)');
+    console.warn('[moodify] MongoDB:', err.message, '(moods via YouTube still work)');
   });
