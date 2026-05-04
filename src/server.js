@@ -1,9 +1,9 @@
 const { loadEnv, ENV_FILE, youtubeApiKey } = require('./config/env');
 
 loadEnv();
-console.log('[moodify] Loading…');
+console.log('[moodify] starting');
 if (!youtubeApiKey()) {
-  console.warn('[moodify] YOUTUBE_API_KEY missing — expected in:', ENV_FILE);
+  console.warn('[moodify] YOUTUBE_API_KEY missing; set in', ENV_FILE);
 }
 
 const mongoose = require('mongoose');

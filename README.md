@@ -1,90 +1,100 @@
 # Moodify
 
-Pick a mood, get randomized **YouTube** suggestions (YouTube Data API v3). Express API, static front end, optional MongoDB for auth and saved tracks.
+Pick a **mood** → get **random YouTube** suggestions (server calls **YouTube Data API v3** with your key). **Express** API + static **HTML/CSS/JS**. Optional **MongoDB** + **JWT** for sign-up and saved tracks. **Docker** and **Jest** included.
 
-## Requirements
+---
 
-- Node 20+ (matches Docker image)
-- [YouTube Data API v3](https://console.cloud.google.com/apis/library/youtube.googleapis.com) key
+## Explain it in 30 seconds
 
-## Environment
+1. The **browser** loads moods from `GET /api/bootstrap`.
+2. You click a mood → **JavaScript** calls `GET /api/moods/recommend?mood=…`.
+3. **Express** picks a random search phrase for that mood, **Axios** calls YouTube, returns titles + watch links.
+4. **`.env`** holds `YOUTUBE_API_KEY` (never sent to the browser).
 
-Copy `.env.example` to `.env` and set:
+---
 
-| Variable | Required | Notes |
-|----------|----------|--------|
-| `YOUTUBE_API_KEY` | Yes (for recommendations) | Project root `.env` |
-| `JWT_SECRET` | Yes (for `/api/auth`, `/api/tracks`) | Long random string |
-| `MONGO_URI` | Optional locally | Docker Compose overrides this for the `app` service |
-| `PORT` | No | Default `3000` |
+## Stack
 
-## Scripts
+| Piece | Role |
+|-------|------|
+| Node.js + Express | HTTP API + static `public/` |
+| Axios | YouTube `search` API (server-side key) |
+| dotenv | Loads `.env` |
+| Mongoose + JWT | Users + saved tracks (optional) |
+| Docker Compose | App + Mongo in containers |
+| Jest + Supertest | Tests (see `npm test`) |
 
-| Command | Purpose |
-|---------|---------|
-| `npm run dev` | Development server (nodemon) |
-| `npm start` | Production-style (`node src/server.js`) |
-| `npm test` | Jest + Supertest (no Mongo / no live YouTube) |
-| `npm run docker:up` | Build and start app + Mongo (detached) |
-| `npm run docker:down` | Stop Compose stack |
-| `npm run docker:logs` | Follow app container logs |
+---
 
-## Run locally
+## Quick start (terminal)
 
 ```bash
 npm install
 cp .env.example .env
-# edit .env — set YOUTUBE_API_KEY and JWT_SECRET
+# Set YOUTUBE_API_KEY and JWT_SECRET in .env
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Start Mongo if you use registration, login, or saved tracks.
+Open **http://localhost:3000**
 
-## Run with Docker
+---
 
-From this directory (where `docker-compose.yml` lives):
+## IntelliJ IDEA (WebStorm / IDEA Ultimate)
+
+1. **File → Open…** and choose the **`moodify`** folder (the one that contains `package.json`).
+2. When prompted, trust the project and use the **built-in Node** (or point to your Node 20+).
+3. Terminal (**View → Tool Windows → Terminal**): run `npm install`.
+4. Create `.env` (copy from `.env.example`) and set `YOUTUBE_API_KEY` and `JWT_SECRET`.
+5. **Run** the shared configuration:
+   - **Moodify dev** — same as `npm run dev` (nodemon).
+   - **Moodify test** — same as `npm test`.
+
+Configs live under **`.run/`**. If they do not appear: **Run → Edit Configurations → + → npm** → set **package.json** to this project’s `package.json` → **Command** `run` → **Scripts** `dev` (or `test`).
+
+---
+
+## Docker
 
 ```bash
-cp .env.example .env   # if you do not have .env yet
+cp .env.example .env   # add keys
 npm run docker:up
 ```
 
-- App: [http://localhost:3000](http://localhost:3000)  
-- Mongo on the host: `mongodb://localhost:27018` (maps to the `mongo` service)
+App: **http://localhost:3000** · Mongo on host: **localhost:27018**
 
-Compose sets `MONGO_URI=mongodb://mongo:27017/moodify` for the app container. Keep secrets in `.env` on the host; that file is not copied into the image.
+---
 
-## Project layout
+## Layout
 
 ```
-moodify/
-├── public/           # Static UI
-├── src/
-│   ├── server.js     # Env, HTTP listen, Mongo
-│   ├── app.js        # Express app, routes, static files
-│   ├── config/       # env.js, moods.js
-│   ├── controllers/
-│   ├── middleware/
-│   ├── models/
-│   └── routes/
-├── tests/            # Jest tests
-├── Dockerfile
-└── docker-compose.yml
+src/server.js    # entry: env, listen, Mongo
+src/app.js       # Express + routes + static files
+src/config/      # env.js, moods.js
+public/          # UI
+tests/           # Jest
 ```
 
-## API (overview)
+---
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/api/bootstrap` | Moods list + `youtubeConfigured` |
-| GET | `/api/moods` | Same mood ids as bootstrap |
-| GET | `/api/moods/recommend?mood=` | YouTube-backed suggestions |
-| GET | `/api/music-config` | Provider + YouTube key configured flag |
-| POST | `/api/auth/register` | Register |
-| POST | `/api/auth/login` | Login (JWT) |
-| POST | `/api/tracks` | Save a track (Bearer JWT) |
-| GET | `/api/tracks` | List saved tracks (Bearer JWT) |
-| DELETE | `/api/tracks/:id` | Remove a saved track (Bearer JWT) |
+## API (short)
+
+| GET | `/api/bootstrap` | moods + `youtubeConfigured` |
+| GET | `/api/moods/recommend?mood=` | YouTube results |
+| POST | `/api/auth/register`, `/api/auth/login` | auth |
+| * | `/api/tracks` | saved tracks (JWT) |
+
+---
+
+## Git (no `docs/` folder in the repo)
+
+`docs/` is **gitignored** (presentation notes stay on your machine only).
+
+```bash
+git add -A
+git status          # should not list docs/
+git commit -m "your message"
+git push origin main   # or your branch name
+```
 
 ## License
 

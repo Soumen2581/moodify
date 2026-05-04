@@ -11,7 +11,14 @@
     "docker:logs": "docker compose logs -f app",
     "test": "NODE_ENV=test jest --runInBand --forceExit"
   },
-  "keywords": [],
+  "keywords": [
+    "express",
+    "youtube-api",
+    "mood",
+    "full-stack",
+    "mongodb",
+    "docker"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
