@@ -6,7 +6,8 @@ const ROOT = path.resolve(__dirname, '..', '..');
 const ENV_FILE = path.join(ROOT, '.env');
 
 function loadEnv() {
-  dotenv.config({ path: ENV_FILE });
+  // dotenv v17 logs "injected env …" unless quiet is set (see DOTENV_CONFIG_QUIET in their docs).
+  dotenv.config({ path: ENV_FILE, quiet: true });
 }
 
 function youtubeApiKey() {

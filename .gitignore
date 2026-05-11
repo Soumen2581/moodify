@@ -1,6 +1,12 @@
 .env
 node_modules/
+client/node_modules/
+client/dist/
 .DS_Store
 .idea/
+.run/
 coverage/
 docs/
+~$*
+*.log
+npm-debug.log*

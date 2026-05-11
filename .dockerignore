@@ -1,9 +1,14 @@
 node_modules
+client/node_modules
+client/dist
 npm-debug.log
 .git
 .gitignore
 .env
 .DS_Store
 .idea
+.run
+coverage
+docs
 *.md
 !README.md

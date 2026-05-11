@@ -1,7 +1,7 @@
 const { loadEnv, ENV_FILE, youtubeApiKey } = require('./config/env');
 
 loadEnv();
-console.log('[moodify] starting');
+console.log('[moodify] env ok, loading app...');
 if (!youtubeApiKey()) {
   console.warn('[moodify] YOUTUBE_API_KEY missing; set in', ENV_FILE);
 }
@@ -11,10 +11,21 @@ mongoose.set('bufferCommands', false);
 
 const app = require('./app');
 
-const PORT = process.env.PORT || 3000;
+const PORT = Number.parseInt(String(process.env.PORT || '3000'), 10) || 3000;
+// Listen on all interfaces so Docker port mapping and http://localhost both work.
+const HOST = process.env.HOST || '0.0.0.0';
 
-app.listen(PORT, () => {
-  console.log(`[moodify] http://localhost:${PORT}`);
+const server = app.listen(PORT, HOST, () => {
+  console.log(`[moodify] listening at http://127.0.0.1:${PORT} (bound ${HOST}:${PORT})`);
+});
+
+server.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`[moodify] port ${PORT} is already in use. Stop the other app or set PORT in .env.`);
+  } else {
+    console.error('[moodify] server error:', err.message);
+  }
+  process.exit(1);
 });
 
 mongoose
